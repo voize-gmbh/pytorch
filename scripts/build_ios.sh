@@ -22,6 +22,10 @@ echo "Bash: $(/bin/bash --version | head -1)"
 echo "Python: $($PYTHON -c 'import sys; print(sys.version)')"
 echo "Caffe2 path: $CAFFE2_ROOT"
 
+# Checkout Eigen (optional dependency)
+# c.f. https://github.com/pytorch/pytorch/pull/155955
+$PYTHON tools/optional_submodules.py checkout_eigen
+
 CMAKE_ARGS=()
 
 # Build PyTorch mobile
@@ -52,7 +56,7 @@ fi
 # must override these variables via CMake arguments.
 CMAKE_ARGS+=("-DCMAKE_TOOLCHAIN_FILE=$CAFFE2_ROOT/cmake/iOS.cmake")
 if [ -n "${CCACHE_WRAPPER_PATH:-}"]; then
-  CCACHE_WRAPPER_PATH=/usr/local/opt/ccache/libexec
+  CCACHE_WRAPPER_PATH=/opt/homebrew/opt/ccache/libexec
 fi
 if [ -d "$CCACHE_WRAPPER_PATH" ]; then
   CMAKE_ARGS+=("-DCMAKE_C_COMPILER=$CCACHE_WRAPPER_PATH/gcc")
@@ -134,6 +138,7 @@ fi
 
 # enable ARC
 CMAKE_ARGS+=("-DCMAKE_CXX_FLAGS=-fobjc-arc")
+CMAKE_ARGS+=("-DCMAKE_MAKE_PROGRAM="`which make`)
 
 # Now, actually build the iOS target.
 BUILD_ROOT=${BUILD_ROOT:-"$CAFFE2_ROOT/build_ios"}
