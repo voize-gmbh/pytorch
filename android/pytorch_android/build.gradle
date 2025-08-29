@@ -1,9 +1,9 @@
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
 
 android {
+    namespace 'org.pytorch'
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion rootProject.buildToolsVersion
+    ndkVersion rootProject.ndkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
@@ -76,10 +76,6 @@ android {
             logger.warn('WARNING: nativeLibsDoNotStrip==true; debug symbols included')
         }
     }
-
-    useLibrary 'android.test.runner'
-    useLibrary 'android.test.base'
-    useLibrary 'android.test.mock'
 }
 
 dependencies {
@@ -100,7 +96,7 @@ apply from: rootProject.file('gradle/release.gradle')
 
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+    archiveClassifier.set('sources')
 }
 
 def getLibtorchHeadersDir() {

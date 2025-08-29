@@ -34,7 +34,9 @@ set(USE_VULKAN OFF)
 set(pytorch_android_DIR ${CMAKE_CURRENT_LIST_DIR}/src/main/cpp)
 
 if(ANDROID_ABI)
-  set(USE_VULKAN ON)
+  # TODO: Vulkan build setup needs to be adjusted to work with NDK > 21
+  # c.f. https://discuss.pytorch.org/t/cmake-error-during-pytorch-mobile-custom-build/112843/9
+  # set(USE_VULKAN ON)
   set(libtorch_include_DIR ${pytorch_android_DIR}/libtorch_include/${ANDROID_ABI})
   set(BUILD_SUBDIR ${ANDROID_ABI})
 elseif(BUILD_LIBTORCH_WITH_JNI)

@@ -9,7 +9,7 @@ plugins {
 
 repositories {
     mavenLocal()
-    jcenter()
+    mavenCentral()
 }
 
 sourceSets {

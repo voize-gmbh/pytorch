@@ -25,7 +25,7 @@ set -e
 if [ -z "$ANDROID_ABI" ]; then
   ANDROID_ABI="armeabi-v7a with NEON"
 fi
-ANDROID_NATIVE_API_LEVEL="21"
+ANDROID_NATIVE_API_LEVEL="26"
 echo "Build with ANDROID_ABI[$ANDROID_ABI], ANDROID_NATIVE_API_LEVEL[$ANDROID_NATIVE_API_LEVEL]"
 
 CAFFE2_ROOT="$( cd "$(dirname "$0")"/.. ; pwd -P)"
@@ -57,12 +57,19 @@ echo "Caffe2 path: $CAFFE2_ROOT"
 echo "Using Android NDK at $ANDROID_NDK"
 echo "Android NDK version: $ANDROID_NDK_VERSION"
 
+# Checkout Eigen (optional dependency)
+# c.f. https://github.com/pytorch/pytorch/pull/155955
+$PYTHON tools/optional_submodules.py checkout_eigen
+
 CMAKE_ARGS=()
 
 # Build PyTorch mobile
 CMAKE_ARGS+=("-DCMAKE_PREFIX_PATH=$($PYTHON -c 'import sysconfig; print(sysconfig.get_path("purelib"))')")
 CMAKE_ARGS+=("-DPython_EXECUTABLE=$($PYTHON -c 'import sys; print(sys.executable)')")
 CMAKE_ARGS+=("-DBUILD_CUSTOM_PROTOBUF=OFF")
+
+# https://developer.android.com/guide/practices/page-sizes
+CMAKE_ARGS+=("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
 
 # custom build with selected ops
 if [ -n "${SELECTED_OP_LIST}" ]; then
@@ -147,15 +154,17 @@ if [ "${ANDROID_DEBUG_SYMBOLS:-}" == '1' ]; then
   CMAKE_ARGS+=("-DANDROID_DEBUG_SYMBOLS=1")
 fi
 
-if [ -n "${USE_VULKAN}" ]; then
-  CMAKE_ARGS+=("-DUSE_VULKAN=ON")
-  if [ -n "${USE_VULKAN_FP16_INFERENCE}" ]; then
-    CMAKE_ARGS+=("-DUSE_VULKAN_FP16_INFERENCE=ON")
-  fi
-  if [ -n "${USE_VULKAN_RELAXED_PRECISION}" ]; then
-    CMAKE_ARGS+=("-DUSE_VULKAN_RELAXED_PRECISION=ON")
-  fi
-fi
+# Vulkan build is working in NDK > 21
+CMAKE_ARGS+=("-DUSE_VULKAN=OFF")
+# if [ -n "${USE_VULKAN}" ]; then
+#   CMAKE_ARGS+=("-DUSE_VULKAN=ON")
+#   if [ -n "${USE_VULKAN_FP16_INFERENCE}" ]; then
+#     CMAKE_ARGS+=("-DUSE_VULKAN_FP16_INFERENCE=ON")
+#   fi
+#   if [ -n "${USE_VULKAN_RELAXED_PRECISION}" ]; then
+#     CMAKE_ARGS+=("-DUSE_VULKAN_RELAXED_PRECISION=ON")
+#   fi
+# fi
 
 # Use-specified CMake arguments go last to allow overriding defaults
 CMAKE_ARGS+=($@)
