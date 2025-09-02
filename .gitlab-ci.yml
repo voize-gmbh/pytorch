@@ -1,0 +1,102 @@
+include:
+  - project: "voize-gmbh/ci-template"
+    ref: master
+    file: "/templates/.gitlab-ci-template-ios-base.yml"
+  - project: "voize-gmbh/ci-template"
+    ref: master
+    file: "/templates/util.yml"
+
+.ios-base-job-with-cocoapods-jdk-ndk:
+  extends: .ios-base-job
+  retry: !reference [.retry-system-failures, retry]
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - mdutil -i off # kill spotlight indexing
+    - !reference [.setup-ssh]
+    - brew install openjdk@17 python@3.12
+    - python3.12 -m venv venv
+    - . venv/bin/activate
+    - python -m pip install pyyaml==6.0.2 typing-extensions==4.12.2
+    - export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+    - brew install --cask android-commandlinetools
+    - yes | sdkmanager --install "ndk;28.2.13676358" "cmake;3.31.6" "build-tools;34.0.0" "platforms;android-34" "platform-tools" || true
+    - export ANDROID_HOME=$(brew --prefix)/share/android-commandlinetools
+    - export ANDROID_NDK="$ANDROID_HOME/ndk/28.2.13676358"
+    - export PATH="$ANDROID_HOME/cmake/3.31.6/bin:$PATH"
+
+.android-base-job:
+  tags:
+    - k8s
+    - arch-amd64
+    - type-normal
+  image: ubuntu:24.04
+  retry: !reference [.retry-system-failures, retry]
+  interruptible: true
+  variables:
+    KUBERNETES_CPU_REQUEST: 8000m
+    KUBERNETES_MEMORY_REQUEST: 30Gi
+    KUBERNETES_MEMORY_LIMIT: 30Gi
+    KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 30Gi
+    KUBERNETES_EPHEMERAL_STORAGE_LIMIT: 30Gi
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends curl unzip openjdk-17-jdk python3 python3-venv git
+    - python3 -m venv venv
+    - . venv/bin/activate
+    - python -m pip install pyyaml==6.0.2 typing-extensions==4.12.2
+    - curl -LO https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+    - mkdir -p $HOME/Android/sdk/cmdline-tools/latest
+    - mkdir -p /tmp/cmdline-tools
+    - unzip commandlinetools-linux-13114758_latest.zip -d /tmp/cmdline-tools
+    - mv /tmp/cmdline-tools/cmdline-tools/* $HOME/Android/sdk/cmdline-tools/latest
+    - yes | $HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.2.13676358" "cmake;3.31.6" "build-tools;34.0.0" "platforms;android-34" "platform-tools" || true
+    - export PATH="$HOME/Android/sdk/cmake/3.31.6/bin:$PATH"
+    - export ANDROID_HOME=$HOME/Android/sdk
+    - export ANDROID_NDK=$HOME/Android/sdk/ndk/28.2.13676358
+
+build-ios:
+  extends: .ios-base-job-with-cocoapods-jdk-ndk
+  except:
+    - tags
+  script:
+    - ./scripts/build_ios.sh
+    - ./scripts/build_ios_cocoapod.sh
+  artifacts:
+    paths:
+      - out/ios/libtorch_lite_*.zip
+      - out/ios/LibTorch-Lite.podspec
+
+release-ios:
+  extends: build-ios
+  only:
+    - tags
+  script:
+    - !reference [build-ios, script]
+    - VERSION=$(cat version.txt)
+    - ARCHIVE_NAME="LibTorch-Lite-${VERSION}"
+    - mkdir -p out/ios/${ARCHIVE_NAME}
+    - cp -R out/ios/* out/ios/${ARCHIVE_NAME}
+    - tar -czvf "${ARCHIVE_NAME}.tar.gz" -C out/ios ${ARCHIVE_NAME}
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "${ARCHIVE_NAME}.tar.gz" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/LibTorch-Lite/${VERSION}/${ARCHIVE_NAME}.tar.gz"'
+    - pod repo add voize-cocoapod-specs git@gitlab.com:voize-gmbh/voize-ios/voize-cocoapod-specs.git
+    - cd out/ios && pod repo push voize-cocoapod-specs LibTorch-Lite.podspec --allow-warnings
+
+build-android:
+  extends: .android-base-job
+  except:
+    - tags
+  script:
+    - ./scripts/build_pytorch_android.sh armeabi-v7a,arm64-v8a,x86_64
+  artifacts:
+    paths:
+      - android/pytorch_android/build/outputs/aar/pytorch_android-release.aar
+
+release-android:
+  extends: build-android
+  only:
+    - tags
+  script:
+    - !reference [build-android, script]
+    - cd android && ./gradlew -PABI_FILTERS=armeabi-v7a,arm64-v8a,x86_64 :pytorch_android:publish
