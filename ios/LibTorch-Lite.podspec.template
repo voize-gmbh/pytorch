@@ -3,8 +3,8 @@ Pod::Spec.new do |s|
     s.version          = 'IOS_BUILD_VERSION'
     s.authors          = 'PyTorch Team'
     s.license          = { :type => 'BSD' }
-    s.homepage         = 'https://github.com/pytorch/pytorch'
-    s.source           = { :http => "https://ossci-ios.s3.amazonaws.com/libtorch_lite_ios_#{s.version}.zip" }
+    s.homepage         = 'https://gitlab.com/voize-gmbh/machine-learning/pytorch'
+    s.source           = { :http => "https://gitlab.com/api/v4/projects/37349411/packages/generic/LibTorch-Lite/#{s.version}/LibTorch-Lite-#{s.version}.tar.gz" }
     s.summary          = 'The PyTorch C++ library for iOS'
     s.description      = <<-DESC
         The PyTorch C++ library for iOS.

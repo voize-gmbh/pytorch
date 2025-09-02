@@ -5,12 +5,12 @@ allprojects {
             targetSdkVersion = 34
             compileSdkVersion = 34
             buildToolsVersion = '34.0.0'
-            ndkVersion = '27.0.12077973'
+            ndkVersion = '28.2.13676358'
 
-            coreVersion = "1.2.0"
-            extJUnitVersion = "1.1.1"
-            runnerVersion = "1.2.0"
-            rulesVersion = "1.2.0"
+            coreVersion = "1.4.0"
+            extJUnitVersion = "1.2.1"
+            runnerVersion = "1.4.0"
+            rulesVersion = "1.4.0"
             junitVersion = "4.12"
 
             fbjniJavaOnlyVersion = "0.2.2"
@@ -25,7 +25,6 @@ allprojects {
 
         dependencies {
             classpath 'com.android.tools.build:gradle:8.5.1'
-            classpath 'com.vanniktech:gradle-maven-publish-plugin:0.28.0'
         }
     }
 

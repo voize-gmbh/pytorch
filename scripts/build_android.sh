@@ -68,9 +68,6 @@ CMAKE_ARGS+=("-DCMAKE_PREFIX_PATH=$($PYTHON -c 'import sysconfig; print(sysconfi
 CMAKE_ARGS+=("-DPython_EXECUTABLE=$($PYTHON -c 'import sys; print(sys.executable)')")
 CMAKE_ARGS+=("-DBUILD_CUSTOM_PROTOBUF=OFF")
 
-# https://developer.android.com/guide/practices/page-sizes
-CMAKE_ARGS+=("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
-
 # custom build with selected ops
 if [ -n "${SELECTED_OP_LIST}" ]; then
   SELECTED_OP_LIST="$(cd $(dirname $SELECTED_OP_LIST); pwd -P)/$(basename $SELECTED_OP_LIST)"

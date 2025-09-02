@@ -1,4 +1,8 @@
+import org.gradle.api.credentials.HttpHeaderCredentials
+import org.gradle.authentication.http.HttpHeaderAuthentication
+
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 android {
     namespace 'org.pytorch'
@@ -75,6 +79,10 @@ android {
             doNotStrip "**/*.so"
             logger.warn('WARNING: nativeLibsDoNotStrip==true; debug symbols included')
         }
+    }
+
+    publishing {
+        singleVariant('release')
     }
 }
 
@@ -157,3 +165,41 @@ def addFolderToAar(taskName, aarPath, folderPath, folderPathInAar) {
 }
 
 artifacts.add('archives', sourcesJar)
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            // Defer component wiring until after the Android plugin configures variants
+            afterEvaluate { from components.release }
+            groupId = project.findProperty('GROUP')?.toString() ?: 'org.pytorch'
+            artifactId = project.findProperty('POM_ARTIFACT_ID')?.toString() ?: 'pytorch_android_lite'
+            version = project.findProperty('VERSION_NAME')
+            artifact tasks.named('sourcesJar')
+            pom {
+                name.set(POM_NAME)
+                description.set(POM_DESCRIPTION)
+            }
+        }
+    }
+
+    repositories {
+        mavenLocal()
+        maven {
+            name = "GitLab"
+            url = uri("https://gitlab.com/api/v4/projects/37349411/packages/maven")
+            credentials(HttpHeaderCredentials) {
+                if (System.getenv("CI") != null) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                } else {
+                    name = "Private-Token"
+                    def token = project.findProperty("gitLabPrivateToken") ?: ""
+                    value = token.toString()
+                }
+            }
+            authentication {
+                create("header", HttpHeaderAuthentication)
+            }
+        }
+    }
+}
