@@ -1,0 +1,126 @@
+name: Android & iOS CI
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: Build iOS
+    runs-on: macos-14
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Disable Spotlight indexing (best-effort)
+        shell: bash
+        run: mdutil -i off || true
+
+      - name: Install toolchain (JDK 17, Python 3.12, Android cmdline tools)
+        shell: bash
+        run: |
+          brew update
+          brew install openjdk@17 python@3.12
+          echo "/opt/homebrew/opt/openjdk@17/bin" >> "$GITHUB_PATH"
+
+          python3.12 -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml==6.0.2 typing-extensions==4.12.2
+
+          brew install --cask android-commandlinetools
+          ANDROID_HOME=$(brew --prefix)/share/android-commandlinetools
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/cmake/3.31.6/bin" >> "$GITHUB_PATH"
+          yes | sdkmanager --install "ndk;28.2.13676358" "cmake;3.31.6" "build-tools;34.0.0" "platforms;android-34" "platform-tools" || true
+
+      - name: Install CocoaPods
+        shell: bash
+        run: sudo gem install cocoapods
+
+      - name: Build iOS libraries and Pod
+        shell: bash
+        run: |
+          source venv/bin/activate
+          ./scripts/build_ios.sh
+          ./scripts/build_ios_cocoapod.sh
+
+      - name: Package iOS tarball
+        shell: bash
+        run: |
+          VERSION=$(cat version.txt)
+          ARCHIVE_NAME="LibTorch-Lite-${VERSION}"
+          mkdir -p out/ios/${ARCHIVE_NAME}
+          cp -R out/ios/* out/ios/${ARCHIVE_NAME}
+          tar -czvf "${ARCHIVE_NAME}.tar.gz" -C out/ios ${ARCHIVE_NAME}
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-artifacts
+          path: |
+            out/ios/libtorch_lite_*.zip
+            out/ios/LibTorch-Lite.podspec
+            ${{ github.workspace }}/LibTorch-Lite-*.tar.gz
+
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Java (Temurin 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Python deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml==6.0.2 typing-extensions==4.12.2
+
+      - name: Install Android cmdline tools + SDK components
+        shell: bash
+        run: |
+          curl -LO https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+          mkdir -p "$HOME/Android/sdk/cmdline-tools/latest"
+          mkdir -p /tmp/cmdline-tools
+          unzip -q commandlinetools-linux-13114758_latest.zip -d /tmp/cmdline-tools
+          mv /tmp/cmdline-tools/cmdline-tools/* "$HOME/Android/sdk/cmdline-tools/latest"
+          echo "$HOME/Android/sdk/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          ANDROID_HOME="$HOME/Android/sdk"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+          yes | "$HOME/Android/sdk/cmdline-tools/latest/bin/sdkmanager" --install "ndk;28.2.13676358" "cmake;3.31.6" "build-tools;34.0.0" "platforms;android-34" "platform-tools" || true
+          echo "$HOME/Android/sdk/cmake/3.31.6/bin" >> "$GITHUB_PATH"
+
+      - name: Build Android AARs
+        shell: bash
+        run: ./scripts/build_pytorch_android.sh armeabi-v7a,arm64-v8a,x86_64
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aar
+          path: android/pytorch_android/build/outputs/aar/pytorch_android-release.aar
