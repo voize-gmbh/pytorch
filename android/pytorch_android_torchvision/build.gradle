@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    namespace 'org.pytorch.torchvision'
+    namespace 'de.voize.pytorch.torchvision'
     compileSdkVersion rootProject.compileSdkVersion
     ndkVersion rootProject.ndkVersion
 

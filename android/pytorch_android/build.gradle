@@ -5,7 +5,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
 android {
-    namespace 'org.pytorch'
+    namespace 'de.voize.pytorch'
     compileSdkVersion rootProject.compileSdkVersion
     ndkVersion rootProject.ndkVersion
 
@@ -171,7 +171,7 @@ publishing {
         release(MavenPublication) {
             // Defer component wiring until after the Android plugin configures variants
             afterEvaluate { from components.release }
-            groupId = project.findProperty('GROUP')?.toString() ?: 'org.pytorch'
+            groupId = project.findProperty('GROUP')?.toString() ?: 'de.voize.pytorch'
             artifactId = project.findProperty('POM_ARTIFACT_ID')?.toString() ?: 'pytorch_android_lite'
             version = project.findProperty('VERSION_NAME')
             artifact tasks.named('sourcesJar')

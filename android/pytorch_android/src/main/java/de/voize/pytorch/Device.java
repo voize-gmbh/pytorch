@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 public enum Device {
   // Must be in sync with kDeviceCPU, kDeviceVulkan in

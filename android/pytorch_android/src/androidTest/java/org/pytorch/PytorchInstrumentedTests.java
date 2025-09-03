@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;

@@ -1,6 +1,6 @@
 // Copyright 2004-present Facebook. All Rights Reserved.
 
-package org.pytorch;
+package de.voize.pytorch;
 
 import com.facebook.soloader.nativeloader.NativeLoader;
 import com.facebook.soloader.nativeloader.SystemDelegate;
@@ -17,8 +17,8 @@ public class Module {
    *
    * @param modelPath path to file that contains the serialized TorchScript module.
    * @param extraFiles map with extra files names as keys, content of them will be loaded to values.
-   * @param device {@link org.pytorch.Device} to use for running specified module.
-   * @return new {@link org.pytorch.Module} object which owns torch::jit::Module.
+   * @param device {@link de.voize.pytorch.Device} to use for running specified module.
+   * @return new {@link de.voize.pytorch.Module} object which owns torch::jit::Module.
    */
   public static Module load(
       final String modelPath, final Map<String, String> extraFiles, final Device device) {
@@ -32,7 +32,7 @@ public class Module {
    * Loads a serialized TorchScript module from the specified path on the disk to run on CPU.
    *
    * @param modelPath path to file that contains the serialized TorchScript module.
-   * @return new {@link org.pytorch.Module} object which owns torch::jit::Module.
+   * @return new {@link de.voize.pytorch.Module} object which owns torch::jit::Module.
    */
   public static Module load(final String modelPath) {
     return load(modelPath, null, Device.CPU);

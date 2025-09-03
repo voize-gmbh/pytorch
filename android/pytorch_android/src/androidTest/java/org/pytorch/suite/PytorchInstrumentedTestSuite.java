@@ -1,8 +1,8 @@
-package org.pytorch.suite;
+package de.voize.pytorch.suite;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.pytorch.PytorchInstrumentedTests;
+import de.voize.pytorch.PytorchInstrumentedTests;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({PytorchInstrumentedTests.class})

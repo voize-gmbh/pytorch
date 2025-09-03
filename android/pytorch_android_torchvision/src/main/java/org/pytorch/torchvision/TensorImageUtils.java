@@ -1,4 +1,4 @@
-package org.pytorch.torchvision;
+package de.voize.pytorch.torchvision;
 
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
@@ -9,11 +9,11 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Locale;
-import org.pytorch.MemoryFormat;
-import org.pytorch.Tensor;
+import de.voize.pytorch.MemoryFormat;
+import de.voize.pytorch.Tensor;
 
 /**
- * Contains utility functions for {@link org.pytorch.Tensor} creation from {@link
+ * Contains utility functions for {@link de.voize.pytorch.Tensor} creation from {@link
  * android.graphics.Bitmap} or {@link android.media.Image} source.
  */
 public final class TensorImageUtils {
@@ -22,7 +22,7 @@ public final class TensorImageUtils {
   public static float[] TORCHVISION_NORM_STD_RGB = new float[] {0.229f, 0.224f, 0.225f};
 
   /**
-   * Creates new {@link org.pytorch.Tensor} from full {@link android.graphics.Bitmap}, normalized
+   * Creates new {@link de.voize.pytorch.Tensor} from full {@link android.graphics.Bitmap}, normalized
    * with specified in parameters mean and std.
    *
    * @param normMeanRGB means for RGB channels normalization, length must equal 3, RGB order
@@ -137,7 +137,7 @@ public final class TensorImageUtils {
   }
 
   /**
-   * Creates new {@link org.pytorch.Tensor} from specified area of {@link android.graphics.Bitmap},
+   * Creates new {@link de.voize.pytorch.Tensor} from specified area of {@link android.graphics.Bitmap},
    * normalized with specified in parameters mean and std.
    *
    * @param bitmap {@link android.graphics.Bitmap} as a source for Tensor data
@@ -180,7 +180,7 @@ public final class TensorImageUtils {
   }
 
   /**
-   * Creates new {@link org.pytorch.Tensor} from specified area of {@link android.media.Image},
+   * Creates new {@link de.voize.pytorch.Tensor} from specified area of {@link android.media.Image},
    * doing optional rotation, scaling (nearest) and center cropping.
    *
    * @param image {@link android.media.Image} as a source for Tensor data

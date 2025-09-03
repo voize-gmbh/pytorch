@@ -1,4 +1,4 @@
-package org.pytorch.torchvision;
+package de.voize.pytorch.torchvision;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -6,7 +6,7 @@ import android.graphics.Bitmap;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.pytorch.Tensor;
+import de.voize.pytorch.Tensor;
 
 @RunWith(AndroidJUnit4.class)
 public class TorchVisionInstrumentedTests {

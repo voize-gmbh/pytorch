@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 public enum MemoryFormat {
   CONTIGUOUS(1),

@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 import com.facebook.jni.HybridData;
 import com.facebook.jni.annotations.DoNotStrip;

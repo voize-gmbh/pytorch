@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 /** Codes representing tensor data types. */
 public enum DType {

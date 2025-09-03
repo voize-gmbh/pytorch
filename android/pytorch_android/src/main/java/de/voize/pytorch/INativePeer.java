@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 interface INativePeer {
   void resetNative();

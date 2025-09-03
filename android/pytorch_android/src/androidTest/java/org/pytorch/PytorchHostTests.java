@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 import java.io.IOException;
 import java.io.InputStream;

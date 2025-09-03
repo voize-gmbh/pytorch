@@ -1,4 +1,4 @@
-package org.pytorch;
+package de.voize.pytorch;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;

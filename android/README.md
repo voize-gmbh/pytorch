@@ -18,14 +18,14 @@ repositories {
 
 # lite interpreter build
 dependencies {
-    implementation 'org.pytorch:pytorch_android_lite:1.10.0'
-    implementation 'org.pytorch:pytorch_android_torchvision_lite:1.10.0'
+    implementation 'de.voize.pytorch:pytorch_android_lite:1.10.0'
+    implementation 'de.voize.pytorch:pytorch_android_torchvision_lite:1.10.0'
 }
 
 # full jit build
 dependencies {
-    implementation 'org.pytorch:pytorch_android:1.10.0'
-    implementation 'org.pytorch:pytorch_android_torchvision:1.10.0'
+    implementation 'de.voize.pytorch:pytorch_android:1.10.0'
+    implementation 'de.voize.pytorch:pytorch_android_torchvision:1.10.0'
 }
 ```
 
@@ -44,16 +44,16 @@ repositories {
 # lite interpreter build
 dependencies {
     ...
-    implementation 'org.pytorch:pytorch_android_lite:1.12.0-SNAPSHOT'
-    implementation 'org.pytorch:pytorch_android_torchvision_lite:1.12.0-SNAPSHOT'
+    implementation 'de.voize.pytorch:pytorch_android_lite:1.12.0-SNAPSHOT'
+    implementation 'de.voize.pytorch:pytorch_android_torchvision_lite:1.12.0-SNAPSHOT'
     ...
 }
 
 # full jit build
 dependencies {
     ...
-    implementation 'org.pytorch:pytorch_android:1.12.0-SNAPSHOT'
-    implementation 'org.pytorch:pytorch_android_torchvision:1.12.0-SNAPSHOT'
+    implementation 'de.voize.pytorch:pytorch_android:1.12.0-SNAPSHOT'
+    implementation 'de.voize.pytorch:pytorch_android_torchvision:1.12.0-SNAPSHOT'
     ...
 }
 ```
@@ -149,7 +149,7 @@ android {
 }
 
 dependencies {
-    extractForNativeBuild('org.pytorch:pytorch_android:1.10.0')
+    extractForNativeBuild('de.voize.pytorch:pytorch_android:1.10.0')
 }
 
 task extractAARForNativeBuild {
