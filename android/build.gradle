@@ -53,6 +53,7 @@ ext["ossrhPassword"] = System.getenv("OSSRH_PASSWORD")
 def getExtraString(name) { return ext[name]?.toString() }
 
 nexusPublishing {
+    packageGroup = project.findProperty('SONATYPE_STAGING_PROFILE') ?: 'de.voize.pytorch'
     repositories {
         sonatype {
             nexusUrl = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
