@@ -46,7 +46,7 @@ class PytorchJni : public facebook::jni::HybridClass<PytorchJni> {
   c10::DeviceType deviceType_;
 
  public:
-  constexpr static auto kJavaDescriptor = "Lorg/pytorch/LiteNativePeer;";
+  constexpr static auto kJavaDescriptor = "Lde/voize/pytorch/LiteNativePeer;";
 
   static facebook::jni::local_ref<jhybriddata> initHybrid(
       facebook::jni::alias_ref<jclass>,

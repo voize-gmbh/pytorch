@@ -98,7 +98,7 @@ class JIValue : public facebook::jni::JavaClass<JIValue> {
       c10::Dict<c10::IValue, c10::IValue>)>;
 
  public:
-  constexpr static const char* kJavaDescriptor = "Lorg/pytorch/IValue;";
+  constexpr static const char* kJavaDescriptor = "Lde/voize/pytorch/IValue;";
 
   constexpr static int kTypeCodeNull = 1;
 

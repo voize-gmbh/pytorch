@@ -166,7 +166,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void*) {
   }
 
   jclass c =
-      env->FindClass("org/pytorch/torchvision/TensorImageUtils$NativePeer");
+      env->FindClass("de/voize/pytorch/torchvision/TensorImageUtils$NativePeer");
   if (c == nullptr) {
     return JNI_ERR;
   }

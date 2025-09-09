@@ -166,7 +166,7 @@ static at::Tensor newAtTensor(
 
 class TensorHybrid : public facebook::jni::HybridClass<TensorHybrid> {
  public:
-  constexpr static const char* kJavaDescriptor = "Lorg/pytorch/Tensor;";
+  constexpr static const char* kJavaDescriptor = "Lde/voize/pytorch/Tensor;";
 
   explicit TensorHybrid(at::Tensor tensor) : tensor_(tensor) {}
 
@@ -669,7 +669,7 @@ at::IValue JIValue::JIValueToAtIValue(
 #if defined(__ANDROID__)
 class PyTorchAndroidJni : public facebook::jni::JavaClass<PyTorchAndroidJni> {
  public:
-  constexpr static auto kJavaDescriptor = "Lorg/pytorch/PyTorchAndroid;";
+  constexpr static auto kJavaDescriptor = "Lde/voize/pytorch/PyTorchAndroid;";
 
   static void registerNatives() {
     javaClassStatic()->registerNatives({
