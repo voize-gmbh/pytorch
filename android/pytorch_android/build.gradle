@@ -3,6 +3,7 @@ import org.gradle.authentication.http.HttpHeaderAuthentication
 
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 android {
     namespace 'de.voize.pytorch'
@@ -175,9 +176,32 @@ publishing {
             artifactId = project.findProperty('POM_ARTIFACT_ID')?.toString() ?: 'pytorch_android_lite'
             version = project.findProperty('VERSION_NAME')
             artifact tasks.named('sourcesJar')
+
             pom {
                 name.set(POM_NAME)
                 description.set(POM_DESCRIPTION)
+                url.set(POM_URL)
+
+                licenses {
+                    license {
+                        name.set(POM_LICENSE_NAME)
+                        url.set(POM_LICENSE_URL)
+                        distribution.set(POM_LICENSE_DIST)
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set(POM_DEVELOPER_ID)
+                        name.set(POM_DEVELOPER_NAME)
+                    }
+                }
+
+                scm {
+                    url.set(POM_SCM_URL)
+                    connection.set(POM_SCM_CONNECTION)
+                    developerConnection.set(POM_SCM_DEV_CONNECTION)
+                }
             }
         }
     }
@@ -201,5 +225,16 @@ publishing {
                 create("header", HttpHeaderAuthentication)
             }
         }
+    }
+}
+
+// Configure signing
+def signingKey = System.getenv("SIGNING_KEY")
+def signingPassword = System.getenv("SIGNING_PASSWORD")
+
+if (signingKey != null && signingPassword != null) {
+    signing {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications)
     }
 }

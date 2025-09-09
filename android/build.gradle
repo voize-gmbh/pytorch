@@ -1,3 +1,7 @@
+plugins {
+    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+}
+
 allprojects {
     buildscript {
         ext {
@@ -37,3 +41,24 @@ allprojects {
 ext.deps = [
         jsr305: 'com.google.code.findbugs:jsr305:3.0.1',
 ]
+
+// Stub secrets to let the project sync and build without the publication values set up
+ext["ossrhUsername"] = null
+ext["ossrhPassword"] = null
+
+// Grabbing secrets from environment variables
+ext["ossrhUsername"] = System.getenv("OSSRH_USERNAME")
+ext["ossrhPassword"] = System.getenv("OSSRH_PASSWORD")
+
+def getExtraString(name) { return ext[name]?.toString() }
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
+            snapshotRepositoryUrl = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            username = getExtraString("ossrhUsername")
+            password = getExtraString("ossrhPassword")
+        }
+    }
+}

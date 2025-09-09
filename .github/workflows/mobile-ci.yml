@@ -124,3 +124,14 @@ jobs:
         with:
           name: android-aar
           path: android/pytorch_android/build/outputs/aar/pytorch_android-release.aar
+
+      - name: Publish to Maven Central
+        # if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd android
+          ./gradlew publishAllPublicationsToSonatypeRepository --max-workers 1 closeAndReleaseSonatypeStagingRepository
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
