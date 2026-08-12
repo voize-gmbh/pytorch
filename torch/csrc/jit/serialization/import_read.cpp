@@ -37,8 +37,40 @@ IValue readArchiveAndTensors(
   std::string tensor_dir_path =
       (!tensor_prefix.empty()) ? tensor_prefix : archive_name + "/";
 
-  auto read_record = [&](const std::string& name) {
+  // When the archive is memory-mapped, tensor storages can point straight into
+  // the mapping instead of getting a heap copy of the weights. The archive
+  // format makes this safe: PyTorchStreamWriter stores records uncompressed and
+  // 64-byte aligned precisely so that the file can be mmapped and tensor data
+  // addressed in place. Records that do not qualify (deflated by a third-party
+  // zip tool, or under-aligned) still go through getRecord().
+  auto mmap_region = stream_reader.mmapRegion();
+  auto read_record = [&stream_reader, &tensor_dir_path, mmap_region](
+                         const std::string& name) -> at::DataPtr {
     std::string ss = tensor_dir_path + name;
+    if (mmap_region) {
+      size_t offset = 0;
+      size_t size = 0;
+      if (stream_reader.getStoredRecordExtent(
+              ss,
+              caffe2::serialize::PyTorchStreamReader::kDefaultRecordAlignment,
+              &offset,
+              &size)) {
+        void* addr = static_cast<char*>(mmap_region->addr()) + offset;
+        // The storage does not own these bytes, so instead of a deleter we stash
+        // a strong reference to the mapping in the DataPtr context. The region is
+        // unmapped once the last storage aliasing it is gone.
+        auto* ctx =
+            new std::shared_ptr<caffe2::serialize::MmapRegion>(mmap_region);
+        return at::DataPtr(
+            addr,
+            ctx,
+            [](void* ctx) {
+              delete static_cast<
+                  std::shared_ptr<caffe2::serialize::MmapRegion>*>(ctx);
+            },
+            at::kCPU);
+      }
+    }
     return std::get<0>(stream_reader.getRecord(ss));
   };
 

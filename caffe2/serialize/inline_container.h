@@ -186,6 +186,27 @@ class TORCH_API PyTorchStreamReader final {
   bool hasRecord(const std::string& name);
   std::vector<std::string> getAllRecords();
 
+  // The memory mapping backing this archive, or nullptr when the underlying
+  // adapter is not mmap-backed.
+  std::shared_ptr<MmapRegion> mmapRegion() const;
+
+  // Alignment tensor data can be assumed to have, matching the default
+  // `alignment` of PyTorchStreamWriter below. An archive written with a smaller
+  // alignment is still readable; its records simply do not qualify for in-place
+  // use and get copied instead.
+  static constexpr uint64_t kDefaultRecordAlignment = 64;
+
+  // Describes where a record's bytes live in the file, but only for records
+  // stored uncompressed and aligned well enough to be used in place. On success
+  // writes the file offset and length and returns true; returns false for
+  // deflated or misaligned records, which have to go through getRecord()
+  // instead. `min_alignment` must be a power of two.
+  bool getStoredRecordExtent(
+      const std::string& name,
+      size_t min_alignment,
+      size_t* offset,
+      size_t* size);
+
   ChunkRecordIterator createChunkReaderIter(
       const std::string& name,
       const size_t recordSize,

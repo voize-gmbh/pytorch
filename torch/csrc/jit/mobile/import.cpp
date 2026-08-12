@@ -662,7 +662,15 @@ mobile::Module _load_for_mobile(
         data, size, device, extra_files, module_load_options);
   }
 
-  auto rai = std::make_unique<caffe2::serialize::FileAdapter>(filename);
+  std::unique_ptr<ReadAdapterInterface> rai;
+#if !defined(_WIN32)
+  if (module_load_options & MobileModuleLoadOptions::USE_MMAP) {
+    rai = std::make_unique<caffe2::serialize::MmapReadAdapter>(filename);
+  }
+#endif
+  if (!rai) {
+    rai = std::make_unique<caffe2::serialize::FileAdapter>(filename);
+  }
   return _load_for_mobile_impl(
       std::move(rai), device, extra_files, module_load_options);
 }
