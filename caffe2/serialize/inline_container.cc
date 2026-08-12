@@ -629,6 +629,57 @@ size_t PyTorchStreamReader::getRecordOffset(const std::string& name) {
       extra_len;
 }
 
+std::shared_ptr<MmapRegion> PyTorchStreamReader::mmapRegion() const {
+  return in_ ? in_->mmapRegion() : nullptr;
+}
+
+bool PyTorchStreamReader::getStoredRecordExtent(
+    const std::string& name,
+    size_t min_alignment,
+    size_t* offset,
+    size_t* size) {
+  std::lock_guard<std::mutex> guard(reader_lock_);
+  mz_zip_archive_file_stat stat;
+  mz_zip_reader_file_stat(ar_.get(), getRecordID(name), &stat);
+  valid("retrieving file meta-data for ", name.c_str());
+
+  // PyTorchStreamWriter always stores records uncompressed, but the reader also
+  // accepts archives repacked by ordinary zip tools, which may deflate some
+  // entries. Those cannot be used in place.
+  if (stat.m_method != 0) {
+    return false;
+  }
+
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  uint8_t local_header[MZ_ZIP_LOCAL_DIR_HEADER_SIZE];
+  in_->read(
+      stat.m_local_header_ofs,
+      local_header,
+      MZ_ZIP_LOCAL_DIR_HEADER_SIZE,
+      "reading file header");
+  size_t filename_len = read_le_16(local_header + MZ_ZIP_LDH_FILENAME_LEN_OFS);
+  size_t extra_len = read_le_16(local_header + MZ_ZIP_LDH_EXTRA_LEN_OFS);
+  const size_t data_offset = stat.m_local_header_ofs +
+      MZ_ZIP_LOCAL_DIR_HEADER_SIZE + filename_len + extra_len;
+
+  // Tensor data is expected to be aligned by the writer; refuse to hand out an
+  // under-aligned pointer since kernels may assume alignment. Note the writer's
+  // alignment is configurable, so an archive written with a smaller alignment
+  // simply falls back to copying.
+  if (min_alignment != 0 && (data_offset & (min_alignment - 1)) != 0) {
+    return false;
+  }
+
+  const size_t record_size = static_cast<size_t>(stat.m_uncomp_size);
+  if (data_offset + record_size > in_->size()) {
+    return false;
+  }
+
+  *offset = data_offset;
+  *size = record_size;
+  return true;
+}
+
 size_t PyTorchStreamReader::getRecordSize(const std::string& name) {
   mz_zip_archive_file_stat stat;
   mz_zip_reader_file_stat(ar_.get(), getRecordID(name), &stat);

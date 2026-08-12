@@ -10,6 +10,12 @@ enum MobileModuleLoadOptions {
   // files automatically without explicit entries mapping. Refer to PR for a
   // detail: https://github.com/pytorch/pytorch/pull/99747
   PARSE_ALL_EXTRA_FILE_MAPS = 2,
+  // USE_MMAP memory-maps the model file and lets tensor storages alias the
+  // mapping instead of copying the weights onto the heap. Only affects loading
+  // from a file path, and only records that are stored uncompressed and
+  // aligned; anything else still gets copied. Weight pages then stay clean and
+  // file-backed, so the OS can evict them under memory pressure.
+  USE_MMAP = 4,
 };
 
 const uint64_t kDefaultMobileLoadOptions =
